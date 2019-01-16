@@ -44,7 +44,7 @@
 </template>
 
 <script>
-// import axios from 'axios';
+import axios from 'axios';
 
 export default {
   name: "Upload",
@@ -59,9 +59,20 @@ export default {
 
   methods: {
     selectFiles() {
-      this.files = this.$refs.files.files[0];
-      this.error = false;
-      this.message = "";
+      const files = this.$refs.files.files[0];
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      const MAX_SIZE = 200000;
+      const tooLarge = files.size > MAX_SIZE;
+
+      if (allowedTypes.includes(files.type) && !tooLarge) {
+        this.files = files;
+        this.error = false;
+        this.message = "";
+      } else {
+        this.files = ""
+        this.error = true;
+        this.message = tooLarge ? `Too large. Max size is ${MAX_SIZE/1000}KB` : "Only images are allowed";
+      }
     },
 
     async sendFile() {
@@ -69,17 +80,20 @@ export default {
       formData.append('files', this.files);
 
       try {
-        await fetch('/upload', {
-          method: 'post',
-          body: formData,
-        })
+        // await fetch('/upload', {
+        //   method: 'post',
+        //   body: formData,
+        // })
+
+        await axios.post('/upload', formData)
+
         this.message = "File has been uploaded";
         this.error = false;
         this.files = '';
-        // await axios.post('/upload', formData)
       } catch(err) {
         // eslint-disable-next-line
         console.log(err)
+        this.message = err.response.data.error;
         this.error = true;
       }
     }
