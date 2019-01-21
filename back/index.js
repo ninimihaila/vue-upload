@@ -17,7 +17,7 @@ const fileFilter = function (req, file, cb) {
     cb(null, true);
 }
 
-const MAX_SIZE = 200000;
+const MAX_SIZE = 2000000;
 
 const upload = multer({
     dest: './uploads/',
@@ -27,8 +27,8 @@ const upload = multer({
     }
 })
 
-app.post('/upload', upload.single('files'), (req, res) => {
-  res.json({files: req.file})
+app.post('/upload', upload.array('files'), (req, res) => {
+  res.json({files: req.files})
 })
 
 app.use((err, req, res, next) => {

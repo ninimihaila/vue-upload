@@ -13,6 +13,7 @@
         <label class="file-label">
           <input
             type="file"
+            multiple
             ref="files"
             class="file-input"
             @change="selectFiles"
@@ -27,11 +28,27 @@
             </span>
           </span>
 
-          <span v-if="files" class="file-name">{{ files.name }}</span>
-
         </label>
       </div>
 
+    </div>
+
+    <div class="field">
+      <div class="level" v-for="(file, index) in selectedFiles"
+        :key="index"
+        :class="`level ${file.invalidMessage && 'has-text-danger'}`">
+        <div class="level-left">
+          <div class="level-item">
+            {{file.name}}
+            <span v-if="file.invalidMessage">&nbsp;- {{file.invalidMessage}}</span>
+          </div>
+        </div>
+        <div class="level-right">
+          <div class="level-item">
+            <a class="delete" @click.prevent="removeFileAt(index)"></a>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="field">
@@ -51,7 +68,8 @@ export default {
 
   data() {
     return {
-      files: "",
+      selectedFiles: [],
+      files: [],
       message: "",
       error: false,
     }
@@ -59,25 +77,49 @@ export default {
 
   methods: {
     selectFiles() {
-      const files = this.$refs.files.files[0];
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
-      const MAX_SIZE = 200000;
-      const tooLarge = files.size > MAX_SIZE;
+      const files = this.$refs.files.files;
 
-      if (allowedTypes.includes(files.type) && !tooLarge) {
-        this.files = files;
-        this.error = false;
-        this.message = "";
+      this.files = [...this.files, ...files]
+
+      this.selectedFiles = [
+        ...this.selectedFiles,
+        ...Array.from(files).map(file => ({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            invalidMessage: this.validate(file)
+        }))
+      ];
+    },
+
+    validate(file) {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+      const MAX_SIZE = 2000000;
+      const tooLarge = file.size > MAX_SIZE;
+
+      if (allowedTypes.includes(file.type) && !tooLarge) {
+        return "";
       } else {
-        this.files = ""
-        this.error = true;
-        this.message = tooLarge ? `Too large. Max size is ${MAX_SIZE/1000}KB` : "Only images are allowed";
+        return tooLarge ? `Too large. Max size is ${MAX_SIZE/1000}KB` : "Only images are allowed";
       }
+    },
+
+    removeFileAt(index) {
+      this.files.splice(index, 1)
+      this.selectedFiles.splice(index, 1)
     },
 
     async sendFile() {
       const formData = new FormData();
-      formData.append('files', this.files);
+
+      for (let file of this.files) {
+        if (!this.validate(file)) {
+          formData.append('files', file);
+          console.log('validated')
+        } else {
+          console.log('bad')
+        }
+      }
 
       try {
         // await fetch('/upload', {
@@ -89,7 +131,8 @@ export default {
 
         this.message = "File has been uploaded";
         this.error = false;
-        this.files = '';
+        this.files = [];
+        this.selectedFiles = [];
       } catch(err) {
         // eslint-disable-next-line
         console.log(err)
