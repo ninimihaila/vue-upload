@@ -8,6 +8,8 @@
       </div>
     </div>
 
+    <!--
+
     <div class="field">
       <div class="file is-boxed is-primary">
         <label class="file-label">
@@ -30,6 +32,32 @@
 
         </label>
       </div>
+
+    </div>
+
+    -->
+
+    <div class="dropzone">
+      <input
+        type="file"
+        ref="files"
+        multiple
+        class="input-files"
+        @change="selectFiles"
+      />
+
+      <p v-if="!uploading" class="call-to-action">
+        Drag files here
+      </p>
+
+      <p v-if="uploading" class="progress-bar">
+        <progress class="progress is-primary"
+          :value="progress"
+          max="100"
+        >
+          {{progress}} %
+        </progress>
+      </p>
 
     </div>
 
@@ -72,6 +100,8 @@ export default {
       files: [],
       message: "",
       error: false,
+      uploading: false,
+      progress: 0,
     }
   },
 
@@ -122,14 +152,18 @@ export default {
       }
 
       try {
+        this.uploading = true;
+
         // await fetch('/upload', {
         //   method: 'post',
         //   body: formData,
         // })
 
-        await axios.post('/upload', formData)
+        await axios.post('/upload', formData, {
+          onUploadProgress: e => this.progress = Math.round(e.loaded * 100 / e.total)
+        })
 
-        this.message = "File has been uploaded";
+        this.message = "Files have been uploaded";
         this.error = false;
         this.files = [];
         this.selectedFiles = [];
@@ -138,6 +172,9 @@ export default {
         console.log(err)
         this.message = err.response.data.error;
         this.error = true;
+      } finally {
+        this.uploading = false;
+        this.progress = 0;
       }
     }
   },
@@ -150,5 +187,38 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  .dropzone {
+    min-height: 200px;
+    padding: 10px 10px;
+    position: relative;
+    cursor: pointer;
+    outline: 2px dashed grey;
+    outline-offset: -10px;
+    /* border-radius: 5px; */
+    background: lightcyan;
+    color: dimgray;
+  }
 
+  .dropzone:hover {
+    background: cyan;
+  }
+
+  .dropzone .call-to-action {
+    font-size: 1.2rem;
+    text-align: center;
+    padding: 70px;
+  }
+
+  .dropzone .progress-bar {
+    text-align: center;
+    padding: 70px 10px;
+  }
+
+  .input-files {
+    opacity: 0;
+    width: 100%;
+    height: 200px;
+    position: absolute;
+    cursor: pointer;
+  }
 </style>
