@@ -24,11 +24,15 @@ const upload = multer({
     fileFilter,
     limits: {
         fileSize: MAX_SIZE
+    },
+    filename: function ( req, file, cb ) {
+        console.log(file.originalname);
+        cb( null, file.originalname );
     }
 })
 
-app.post('/upload', upload.array('files'), (req, res) => {
-  res.json({files: req.files})
+app.post('/upload', upload.single('file'), (req, res) => {
+  res.json({file: req.file})
 })
 
 app.use((err, req, res, next) => {

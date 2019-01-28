@@ -8,34 +8,9 @@
       </div>
     </div>
 
+    <vue-dropzone id="drop" :options="dropOptions"></vue-dropzone>
+
     <!--
-
-    <div class="field">
-      <div class="file is-boxed is-primary">
-        <label class="file-label">
-          <input
-            type="file"
-            multiple
-            ref="files"
-            class="file-input"
-            @change="selectFiles"
-          />
-
-          <span class="file-cta">
-            <span class="file-icon">
-              <i class="fas fa-upload"></i>
-            </span>
-            <span class="file-label">
-              Upload
-            </span>
-          </span>
-
-        </label>
-      </div>
-
-    </div>
-
-    -->
 
     <div class="dropzone">
       <input
@@ -85,17 +60,24 @@
       </button>
     </div>
 
+    -->
+
   </form>
 </template>
 
 <script>
 import axios from 'axios';
+import vueDropzone from 'vue2-dropzone';
+import 'vue2-dropzone/dist/vue2Dropzone.css'
 
 export default {
   name: "Upload",
 
   data() {
     return {
+      dropOptions: {
+        url: "/upload"
+      },
       selectedFiles: [],
       files: [],
       message: "",
@@ -179,22 +161,21 @@ export default {
     }
   },
 
-  // props: {
-  //   msg: String
-  // }
+  components: {
+    vueDropzone
+  },
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-  .dropzone {
+  /* .dropzone {
     min-height: 200px;
     padding: 10px 10px;
     position: relative;
     cursor: pointer;
     outline: 2px dashed grey;
     outline-offset: -10px;
-    /* border-radius: 5px; */
     background: lightcyan;
     color: dimgray;
   }
@@ -220,5 +201,5 @@ export default {
     height: 200px;
     position: absolute;
     cursor: pointer;
-  }
+  } */
 </style>
